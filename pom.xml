@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Maven 项目配置 -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 统一管理 Spring Boot 依赖与插件版本。 -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.0</version>
+        <relativePath/> <!-- 不查找本地父工程。 -->
+    </parent>
+
+    <groupId>com.wang</groupId>
+    <artifactId>platform</artifactId>
+    <version>0.1.0</version>
+    <name>platform</name>
+    <description>基于 Java 25 与 Spring Boot 4.1 构建的企业级 Web 后端项目骨架</description>
+
+    <properties>
+        <!-- Parent 会据此配置 Java release。 -->
+        <java.version>25</java.version>
+    </properties>
+
+    <dependencies>
+        <!-- Spring MVC Web，默认使用嵌入式 Tomcat。 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+
+        <!-- 让源码可以使用 Lombok 注解；optional 避免向下游项目传递，版本由 Spring Boot 管理。 -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring MVC 与 Spring Boot 测试支持。 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- 打包可通过 java -jar 运行的 Spring Boot JAR。 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- 执行 Lombok 代码生成；JDK 23+ 需要显式声明注解处理器。 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <!-- 生产代码和测试代码属于两个编译任务，因此分别配置。 -->
+                    <execution>
+                        <!-- 使用 Maven 默认的生产代码编译任务标识。 -->
+                        <id>default-compile</id>
+                        <!-- 绑定到 Maven 的 compile 生命周期阶段。 -->
+                        <phase>compile</phase>
+                        <goals>
+                            <!-- 编译 src/main/java 下的生产代码。 -->
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <!-- 限定生产代码编译期间允许执行的注解处理器。 -->
+                            <annotationProcessorPaths>
+                                <path>
+                                    <!-- Lombok 根据注解生成 getter、构造器等代码，版本由 Parent 管理。 -->
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok</artifactId>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <!-- 使用 Maven 默认的测试代码编译任务标识。 -->
+                        <id>default-testCompile</id>
+                        <!-- 绑定到 Maven 的 test-compile 生命周期阶段。 -->
+                        <phase>test-compile</phase>
+                        <goals>
+                            <!-- 编译 src/test/java 下的测试代码。 -->
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <!-- 测试代码使用 Lombok 注解时也需要执行处理器。 -->
+                            <annotationProcessorPaths>
+                                <path>
+                                    <!-- 版本继续由 Spring Boot Parent 统一管理。 -->
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok</artifactId>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,7 @@
+# 应用配置
+spring:
+  application:
+    name: platform
+
+server:
+  port: 9999

@@ -1,0 +1,58 @@
+# Git 忽略规则
+
+# 构建产物
+target/
+*.log
+
+# 本地配置和密钥
+.env
+.env.*
+!.env.example
+application-local.yaml
+application-local.yml
+
+# AI 工具的本地配置和会话状态
+.qoder/
+.trae/
+.workbuddy/
+.aionui/
+.codex/
+.claude/
+.cursor/
+.windsurf/
+.continue/
+.aider/
+.aider.*
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Operating systems ###
+.DS_Store
+Thumbs.db
+Desktop.ini
