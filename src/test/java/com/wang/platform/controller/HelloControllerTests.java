@@ -15,13 +15,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(HelloController.class)
 class HelloControllerTests {
 
+    /**
+     * WebMvcTest 切片注入的 MockMvc，用于驱动 controller。
+     */
     private final MockMvc mockMvc;
+
 
     @Autowired
     HelloControllerTests(MockMvc mockMvc) {
         this.mockMvc = mockMvc;
     }
 
+
+    /**
+     * GET /hello 应返回 200，文本类型为 text/plain，内容为固定欢迎语。
+     */
     @Test
     void shouldReturnHelloMessage() throws Exception {
         mockMvc.perform(get("/hello"))
@@ -29,4 +37,5 @@ class HelloControllerTests {
                 .andExpect(content().contentTypeCompatibleWith("text/plain"))
                 .andExpect(content().string("Hello, World!"));
     }
+
 }

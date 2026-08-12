@@ -13,6 +13,7 @@ Platform 是基于 Spring Boot 4.1.0 与 JDK 25 构建的企业级 Web 后端项
 | Tomcat | 随 Spring Boot 管理 | 默认嵌入式 Web 容器 |
 | Lombok | 随 Spring Boot 管理 | 编译期代码生成工具 |
 | JUnit Jupiter | 随 Spring Boot 管理 | 单元测试框架 |
+| AssertJ | 随 Spring Boot 管理 | 测试断言库 |
 
 ## 项目结构
 
@@ -21,17 +22,26 @@ platform/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/wang/platform/
+│   │   │   ├── common/
+│   │   │   │   └── response/
+│   │   │   │       ├── Result.java            # 公共 API 全局返回参数
+│   │   │   │       └── ResultEnum.java        # 全局返回参数业务状态码
 │   │   │   ├── controller/
 │   │   │   │   └── HelloController.java       # 示例接口
 │   │   │   └── PlatformApplication.java       # 启动类
 │   │   └── resources/
 │   │       └── application.yml                # 应用配置
 │   └── test/java/com/wang/platform/
+│       ├── common/
+│       │   └── response/
+│       │       └── ResultTests.java           # 全局返回参数测试
 │       ├── controller/
 │       │   └── HelloControllerTests.java      # 接口测试
 │       └── PlatformApplicationTests.java      # 启动测试
 ├── docs/
-│   └── decisions.md                           # 项目技术决策记录
+│   ├── decisions.md                           # 项目技术决策记录
+│   ├── style.md                               # 代码格式与风格规范
+│   └── todo.md                                # 技术待办与未决事项
 ├── .editorconfig                              # 编辑器基础格式
 ├── .gitattributes                             # Git 换行与文件类型规则
 ├── .gitignore                                 # Git 忽略规则
@@ -62,47 +72,20 @@ JDK 25 默认使用 UTF-8，Spring Boot Parent 也已配置 Maven 构建编码�
 
 应用默认监听 `9999` 端口。启动后访问 `http://localhost:9999/hello`，响应内容为 `Hello, World!`。
 
-### 2. 运行测试
+### 2. 构建与测试
 
-运行全部测试：
+| 命令 | 用途 |
+| --- | --- |
+| `mvn test` | 运行全部测试 |
+| `mvn -Dtest=ResultTests test` | 只运行指定测试类 |
+| `mvn package` | 打包并运行测试 |
+| `mvn package -DskipTests` | 跳过测试快速打包 |
+| `mvn verify` | 完整验证，用于依赖、配置或公共代码变更后 |
+| `mvn clean verify` | 清理后完整验证，用于发布前或重大依赖升级 |
 
-```powershell
-mvn test
-```
+具体改动该选哪一档验证，见 `AGENTS.md`「测试与验证」。
 
-只运行指定测试类：
-
-```powershell
-mvn -Dtest=PlatformApplicationTests test
-```
-
-### 3. 打包项目
-
-正常打包并运行测试：
-
-```powershell
-mvn package
-```
-
-临时跳过测试进行快速打包：
-
-```powershell
-mvn package -DskipTests
-```
-
-修改 `pom.xml`、启动配置或公共代码后，可以执行完整验证：
-
-```powershell
-mvn verify
-```
-
-只有发布前、重大升级或怀疑旧构建产物干扰时才需要清理构建：
-
-```powershell
-mvn clean verify
-```
-
-### 4. 运行 JAR
+### 3. 运行 JAR
 
 打包产物位于 `target/platform-0.1.0.jar`，运行方式：
 
@@ -143,4 +126,4 @@ docs: 更新项目使用说明
 
 ## AI 协作
 
-使用 Codex、Claude、Trae、Qoder 等工具时，先让 AI 阅读 `AGENTS.md`。需求由开发者在对话中明确，影响长期维护的技术选择统一追加到 `docs/decisions.md`。
+使用 Codex、Claude、Trae、Qoder 等工具时，先让 AI 阅读 `AGENTS.md`。其中的「文档分工」说明了各文档的职责边界，规则只维护在对应文件中，不跨文件重复。
