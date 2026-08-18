@@ -3,43 +3,64 @@ package com.wang.platform.common.response;
 import lombok.Getter;
 
 /**
- * 全局返回参数使用的业务状态码枚举。沿用 HTTP 语义：
- * - 200 表示成功
- * - 4xx 表示请求方问题（参数、校验、鉴权、资源缺失）
- * - 5xx 表示服务端问题
- * 具体业务子码按需在控制器或服务层用 {@link Result#fail(int, String)} 扩展。
+ * 统一结构化响应使用的通用应用码。数值借用常见 HTTP 状态码，便于识别，但不替代 HTTP 响应状态
  */
 @Getter
 public enum ResultEnum {
 
+    /**
+     * 请求处理成功
+     */
     SUCCESS(200, "OK"),
 
-    BAD_REQUEST(400, "请求参数错误"),
+    /**
+     * 请求内容或格式无效
+     */
+    BAD_REQUEST(400, "请求无效"),
 
-    VALIDATION_FAILED(422, "参数校验失败"),
+    /**
+     * 请求未提供有效的认证信息
+     */
+    UNAUTHORIZED(401, "认证信息无效"),
 
-    UNAUTHORIZED(401, "未登录"),
+    /**
+     * 当前身份无权访问目标资源
+     */
+    FORBIDDEN(403, "无权访问该资源"),
 
-    FORBIDDEN(403, "无权限"),
-
+    /**
+     * 请求的资源不存在
+     */
     NOT_FOUND(404, "资源不存在"),
 
+    /**
+     * 目标资源不支持当前请求方法
+     */
     METHOD_NOT_ALLOWED(405, "请求方法不允许"),
 
+    /**
+     * 服务端发生未预期错误
+     */
     SERVER_ERROR(500, "服务器内部错误");
 
 
     /**
-     * 业务状态码。SUCCESS=200 表示成功，4xx 表示请求方问题，5xx 表示服务端问题。
+     * 应用码数值。当前通用码借用 HTTP 状态码数值，但响应状态由 API 边界单独决定
      */
     private final int code;
 
     /**
-     * 默认业务说明文案。枚举内置的提示文字，可被 {@link Result#fail(int, String)} 覆盖。
+     * 默认响应说明文案。枚举内置的提示文字，调用方应保证其安全且可展示
      */
     private final String msg;
 
 
+    /**
+     * 创建通用应用码枚举
+     *
+     * @param code 应用码
+     * @param msg  默认响应说明文案
+     */
     ResultEnum(int code, String msg) {
         this.code = code;
         this.msg = msg;

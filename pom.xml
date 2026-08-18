@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Maven 项目配置 -->
+<!-- Maven 项目配置。 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- 统一管理 Spring Boot 依赖与插件版本。 -->
+    <!-- 统一管理 Spring Boot 依赖和插件版本。 -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -16,10 +16,10 @@
     <artifactId>platform</artifactId>
     <version>0.1.0</version>
     <name>platform</name>
-    <description>基于 Java 25 与 Spring Boot 4.1 构建的企业级 Web 后端项目骨架</description>
+    <description>基于 Java 25 与 Spring Boot 4.1.0 构建的 Web 后端项目骨架</description>
 
     <properties>
-        <!-- Parent 会据此配置 Java release。 -->
+        <!-- Spring Boot Parent 根据该属性配置 Java release。 -->
         <java.version>25</java.version>
     </properties>
 
@@ -30,14 +30,14 @@
             <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
-        <!-- 让源码可以使用 Lombok 注解；optional 避免向下游项目传递，版本由 Spring Boot 管理。 -->
+        <!-- Lombok 仅参与编译；optional 避免向下游项目传递，版本由 Spring Boot Parent 管理。 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring MVC 与 Spring Boot 测试支持。 -->
+        <!-- Spring MVC 和 Spring Boot 测试支持。 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
@@ -72,7 +72,7 @@
                             <!-- 限定生产代码编译期间允许执行的注解处理器。 -->
                             <annotationProcessorPaths>
                                 <path>
-                                    <!-- Lombok 根据注解生成 getter、构造器等代码，版本由 Parent 管理。 -->
+                                    <!-- Lombok 根据注解生成访问器等代码，版本由 Spring Boot Parent 管理。 -->
                                     <groupId>org.projectlombok</groupId>
                                     <artifactId>lombok</artifactId>
                                 </path>

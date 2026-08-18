@@ -2,33 +2,40 @@ package com.wang.platform.common.response;
 
 import lombok.Getter;
 
+import java.util.Objects;
+
 /**
- * 公共 API 全局返回参数。所有 controller 通过静态工厂方法返回，不直接构造。
+ * 公共 API 的统一结构化响应体。纯文本、文件流和无响应体等特殊响应不使用本类型
  *
  * @param <T> 业务载荷类型
  * @see ResultEnum
  */
 @Getter
-public class Result<T> {
+public final class Result<T> {
 
     /**
-     * 业务状态码。SUCCESS=200 表示成功，4xx 表示请求方问题，5xx 表示服务端问题；
-     * 其他取值见 {@link ResultEnum} 与业务子码扩展。
+     * 应用码。当前通用应用码见 {@link ResultEnum}；业务模块出现后再定义稳定的业务错误契约
      */
     private final int code;
 
     /**
-     * 业务载荷。成功时返回数据，失败时为 null。
+     * 业务载荷。成功时返回数据，失败时为 null
      */
     private final T data;
 
     /**
-     * 业务说明文案。成功时为默认成功提示，失败时携带错误描述；
-     * 调用 {@link #fail(int, String)} 时由调用方覆盖。
+     * 响应说明文案。成功时为默认成功提示，失败时携带安全、可读的错误描述
      */
     private final String msg;
 
 
+    /**
+     * 创建统一结构化响应
+     *
+     * @param code 应用码
+     * @param data 业务载荷
+     * @param msg  响应说明文案
+     */
     private Result(int code, T data, String msg) {
         this.code = code;
         this.data = data;
@@ -37,7 +44,7 @@ public class Result<T> {
 
 
     /**
-     * 成功，无业务数据。
+     * 成功，无业务数据
      */
     public static <T> Result<T> success() {
         return new Result<>(ResultEnum.SUCCESS.getCode(), null, ResultEnum.SUCCESS.getMsg());
@@ -45,7 +52,7 @@ public class Result<T> {
 
 
     /**
-     * 成功，带业务数据。
+     * 成功，带业务数据
      */
     public static <T> Result<T> success(T data) {
         return new Result<>(ResultEnum.SUCCESS.getCode(), data, ResultEnum.SUCCESS.getMsg());
@@ -53,18 +60,28 @@ public class Result<T> {
 
 
     /**
-     * 失败，使用错误枚举。
+     * 失败，使用错误枚举
      */
     public static <T> Result<T> fail(ResultEnum resultEnum) {
-        return new Result<>(resultEnum.getCode(), null, resultEnum.getMsg());
+        Objects.requireNonNull(resultEnum, "错误枚举不能为空");
+
+        return fail(resultEnum, resultEnum.getMsg());
     }
 
 
     /**
-     * 失败，指定业务子码和提示文案。code 必须是非 200 的错误码。
+     * 失败，使用错误枚举的应用码与自定义说明文案。适用于校验失败等需要指出具体原因的场景
      */
-    public static <T> Result<T> fail(int code, String msg) {
-        return new Result<>(code, null, msg);
+    public static <T> Result<T> fail(ResultEnum resultEnum, String msg) {
+        Objects.requireNonNull(resultEnum, "错误枚举不能为空");
+        Objects.requireNonNull(msg, "响应说明文案不能为空");
+
+        // 失败工厂只接受错误应用码，避免生成语义自相矛盾的响应体
+        if (ResultEnum.SUCCESS.getCode() == resultEnum.getCode()) {
+            throw new IllegalArgumentException("失败结果不能使用成功应用码");
+        }
+
+        return new Result<>(resultEnum.getCode(), null, msg);
     }
 
 }

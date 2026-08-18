@@ -2,6 +2,10 @@
 spring:
   application:
     name: platform
+  mvc:
+    apiversion:
+      # 允许未携带版本的请求匹配未声明 version 的接口，例如 /hello。
+      required: false
 
 server:
   port: 9999

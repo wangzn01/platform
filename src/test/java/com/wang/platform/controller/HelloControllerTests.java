@@ -10,17 +10,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 接口测试
+ * 未版本化示例接口测试
  */
 @WebMvcTest(HelloController.class)
 class HelloControllerTests {
 
     /**
-     * WebMvcTest 切片注入的 MockMvc，用于驱动 controller。
+     * MVC 测试客户端，用于调用未版本化示例接口
      */
     private final MockMvc mockMvc;
 
 
+    /**
+     * 创建未版本化示例接口测试
+     *
+     * @param mockMvc MVC 测试客户端
+     */
     @Autowired
     HelloControllerTests(MockMvc mockMvc) {
         this.mockMvc = mockMvc;
@@ -28,14 +33,24 @@ class HelloControllerTests {
 
 
     /**
-     * GET /hello 应返回 200，文本类型为 text/plain，内容为固定欢迎语。
+     * 验证 GET /hello 无需版本前缀即可返回固定欢迎文本
      */
     @Test
-    void shouldReturnHelloMessage() throws Exception {
+    void helloShouldReturnWelcomeTextWithoutVersionPrefix() throws Exception {
         mockMvc.perform(get("/hello"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith("text/plain"))
-                .andExpect(content().string("Hello, World!"));
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith("text/plain"))
+            .andExpect(content().string("Hello, World!"));
+    }
+
+
+    /**
+     * 验证未版本化的 hello 接口不会匹配带版本前缀的路径
+     */
+    @Test
+    void helloShouldNotMatchVersionPrefix() throws Exception {
+        mockMvc.perform(get("/v1/hello"))
+            .andExpect(status().isNotFound());
     }
 
 }

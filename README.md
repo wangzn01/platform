@@ -1,6 +1,6 @@
 # 项目说明
 
-Platform 是基于 Spring Boot 4.1.0 与 JDK 25 构建的企业级 Web 后端项目骨架，使用 Spring MVC 和嵌入式 Tomcat，业务能力按实际需求逐步添加。
+Platform 是基于 Spring Boot 4.1.0 与 JDK 25 构建的 Web 后端项目骨架，使用 Spring MVC 和嵌入式 Tomcat，业务能力按实际需求逐步添加。
 
 ## 技术栈
 
@@ -23,30 +23,41 @@ platform/
 │   ├── main/
 │   │   ├── java/com/wang/platform/
 │   │   │   ├── common/
+│   │   │   │   ├── api/
+│   │   │   │   │   └── ApiVersions.java       # 公共 API 版本定义
 │   │   │   │   └── response/
-│   │   │   │       ├── Result.java            # 公共 API 全局返回参数
-│   │   │   │       └── ResultEnum.java        # 全局返回参数业务状态码
+│   │   │   │       ├── Result.java            # 公共 API 统一结构化响应
+│   │   │   │       └── ResultEnum.java        # 公共 API 通用应用码
 │   │   │   ├── controller/
-│   │   │   │   └── HelloController.java       # 示例接口
+│   │   │   │   ├── HelloController.java       # 未版本化示例接口
+│   │   │   │   └── TestController.java        # API 版本示例接口
+│   │   │   ├── infra/
+│   │   │   │   └── config/
+│   │   │   │       └── ApiVersionConfiguration.java # API 路径版本配置
 │   │   │   └── PlatformApplication.java       # 启动类
 │   │   └── resources/
 │   │       └── application.yml                # 应用配置
 │   └── test/java/com/wang/platform/
 │       ├── common/
+│       │   ├── api/
+│       │   │   └── ApiVersionsTests.java      # 公共 API 版本定义测试
 │       │   └── response/
-│       │       └── ResultTests.java           # 全局返回参数测试
+│       │       └── ResultTests.java           # 统一结构化响应测试
 │       ├── controller/
-│       │   └── HelloControllerTests.java      # 接口测试
+│       │   ├── HelloControllerTests.java      # 未版本化示例接口测试
+│       │   └── TestControllerTests.java       # API 版本示例接口测试
+│       ├── infra/
+│       │   └── config/
+│       │       └── ApiVersionConfigurationTests.java # API 路径版本配置测试
 │       └── PlatformApplicationTests.java      # 启动测试
 ├── docs/
-│   ├── decisions.md                           # 项目技术决策记录
-│   ├── style.md                               # 代码格式与风格规范
-│   └── todo.md                                # 技术待办与未决事项
+│   ├── ARCHITECTURE.md                        # 架构与公共契约
+│   ├── CHANGELOG.md                           # 版本更新记录
+│   └── STYLE.md                               # 代码格式与风格规范
 ├── .editorconfig                              # 编辑器基础格式
 ├── .gitattributes                             # Git 换行与文件类型规则
 ├── .gitignore                                 # Git 忽略规则
 ├── AGENTS.md                                  # AI 协作规则
-├── CHANGELOG.md                               # 版本更新记录
 ├── CLAUDE.md                                  # Claude Code 规则入口
 ├── pom.xml                                    # Maven 项目配置
 └── README.md                                  # 项目说明
@@ -56,7 +67,7 @@ platform/
 
 - JDK 25
 - Maven 3.9.16
-- Windows（示例命令均为 PowerShell）
+- 项目本身跨平台；本文命令示例使用 PowerShell
 
 ## 使用说明
 
@@ -70,7 +81,15 @@ mvn spring-boot:run
 
 JDK 25 默认使用 UTF-8，Spring Boot Parent 也已配置 Maven 构建编码，无需额外传入 `-Dfile.encoding=UTF-8`。
 
-应用默认监听 `9999` 端口。启动后访问 `http://localhost:9999/hello`，响应内容为 `Hello, World!`。
+应用默认监听 `9999` 端口，当前示例接口如下：
+
+| 后端请求 | 版本策略 | 响应 |
+| --- | --- | --- |
+| `GET /hello` | 未版本化 | `Hello, World!` |
+| `GET /v1/test` | API 版本 1 | `{"code":200,"data":"API version 1","msg":"OK"}` |
+| `GET /v2/test` | API 版本 2 | `{"code":200,"data":"API version 2","msg":"OK"}` |
+
+版本化路径是应用自身的 `/v1/...` 和 `/v2/...`；是否在部署层增加统一网关前缀，待实际引入网关时另行决定。
 
 ### 2. 构建与测试
 
@@ -80,7 +99,7 @@ JDK 25 默认使用 UTF-8，Spring Boot Parent 也已配置 Maven 构建编码�
 | `mvn -Dtest=ResultTests test` | 只运行指定测试类 |
 | `mvn package` | 打包并运行测试 |
 | `mvn package -DskipTests` | 跳过测试快速打包 |
-| `mvn verify` | 完整验证，用于依赖、配置或公共代码变更后 |
+| `mvn verify` | 完整验证，用于影响构建、启动或跨模块公共代码行为的变更 |
 | `mvn clean verify` | 清理后完整验证，用于发布前或重大依赖升级 |
 
 具体改动该选哪一档验证，见 `AGENTS.md`「测试与验证」。
@@ -101,7 +120,10 @@ java -jar target/platform-0.1.0.jar
 <type>(<scope>): <subject>
 ```
 
-`scope` 可省略，常用 `type` 如下：
+`scope` 可省略；`type` 与 `scope` 使用英文，`subject` 使用简洁中文。单次提交只包含一个内聚改动，不提交
+`target/` 等构建产物。
+
+常用 `type` 如下：
 
 | 类型 | 说明 |
 | --- | --- |
