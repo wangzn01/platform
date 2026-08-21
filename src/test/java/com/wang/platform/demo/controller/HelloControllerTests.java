@@ -1,4 +1,4 @@
-package com.wang.platform.controller;
+package com.wang.platform.demo.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

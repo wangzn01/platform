@@ -1,6 +1,5 @@
-package com.wang.platform.infra.config;
+package com.wang.platform.common.apiversion;
 
-import com.wang.platform.common.api.ApiVersions;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.RequestPath;
 import org.springframework.web.servlet.config.annotation.ApiVersionConfigurer;

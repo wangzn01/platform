@@ -1,4 +1,4 @@
-package com.wang.platform.controller;
+package com.wang.platform.demo.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;

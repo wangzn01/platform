@@ -12,29 +12,56 @@
 ## 依赖纪律
 
 - 依赖和插件版本优先由 Spring Boot Parent 管理，不重复声明已管理的版本。
-- JDK 或 Spring 已有清晰方案时不引入功能重叠的第三方依赖；新增依赖必须用途明确，并与当前版本兼容。
+- JDK 或 Spring 已有清晰方案时不引入功能重叠的第三方依赖（含仅用于判空或字符串处理的工具库）；新增依赖必须用途明确，
+  并与当前版本兼容。空值与空白判断使用 JDK。
 - Lombok 只用于编译期减少样板代码，不进入运行时依赖。
 
 ## 模块化单体架构
 
 - **整体形态**：业务按模块内聚，单进程部署；保持单 Maven 模块，模块化通过包边界与依赖纪律实现。
-- **基础包**：`com.wang.platform`；启动类 `PlatformApplication` 放根包并扫描整个包树。
-- **顶层包**：`common/` 放不依赖 Spring 的共享定义；`infra/` 放依赖 Spring 或第三方框架的横切能力；业务模块直接放在
-  根包下，不再额外包裹 `modules/`。
-- **模块内部**：按需包含 `controller/`、`service/`、`mapper/`、`entity/`、`dto/`、`vo/`、`query/` 以及模块内的
-  `constant/`、`enums/`、`exception/`、`job/`、`config/`。单实现的 Service 直接使用实现类，不为形式上的接口拆分。
-- **避免过度分层**：当前不预设 `manager/`、`application/`、`domain/` 或无业务含义的通用基类、通用 Service、通用
-  Controller、`utils`。确有复杂度证据时，先记录新的架构决策再引入。
-- **边界职责**：业务 Controller 与外部适配器只负责协议转换、边界校验和调用用例；业务编排放在模块 Service，业务约束放在
-  模块内业务代码。示例、探针等没有业务编排的端点可以直接返回固定结果。业务 Controller 不直接承载业务规则，也不绕过
-  Service 操作 Mapper 或 Entity。Service 不依赖 Spring Web 类型，也不组装 `Result`。
-- **依赖方向**：`common` 不依赖 Spring 或业务模块；`infra` 可依赖 `common`；业务模块只依赖公开的 `common` 定义和必要的
-  基础设施契约；禁止循环依赖和跨模块直接访问 Mapper、Entity 等内部实现。
+- **根包**：`com.wang.platform`；启动类 `PlatformApplication` 放根包并扫描整个包树。
+- **术语**：业务模块即 `biz/<context>/`，与一个限界上下文一一对应。功能包即 `common/` 下按平台能力划分的子包。中间件能力包
+  即 `infra/<capability>/`，对应一种已接入的外部系统或中间件。分层子包即 `controller/`、`service/` 等按技术角色划分的包，
+  只出现在业务模块或骨架示例内部。
+- **落点判断**：不绑定外部系统的平台能力放入 `common/<功能>/`；外部系统或中间件的客户端与装配放入 `infra/<capability>/`；
+  某一限界上下文的业务放入 `biz/<context>/`；仅返回固定结果的示例放入 `demo/`（仅骨架阶段）。无法归入以上四类时先向用户
+  确认，不自行增加根包直接子包种类。不得因某类型使用了 Spring 就把平台能力从 `common/` 迁入 `infra/`。
+- **功能内聚**：平台公共服务按功能放在 `common/` 下，同一功能的契约与 Spring 装配放在同一功能包。功能包与中间件能力包内的
+  类型直接放在该包中，不按 `controller/`、`config/` 等分层再拆。本项目以 Spring Boot 为唯一应用框架，`common` 可以使用
+  Spring，不为「有没有 Spring」再拆一层。
+- **顶层包**：根包的直接子包只使用 `common/`、`biz/`、`infra/`、`demo/` 四类，不增加 `modules/` 等无职责的再包裹。`biz/`
+  是业务模块的唯一父包，`infra/` 是中间件的唯一父包。根包除启动类与 `package-info.java` 外不放置其他类型。
+  - `common/`：各业务共用、且不绑定具体外部系统的平台能力，其下按功能分包；当前为统一响应 `common/response/` 与 API 版本
+    `common/apiversion/`。结构化业务响应只使用 `common/response` 的 `Result`，不在其他包另建响应包装类型。全局异常映射等
+    同类平台能力在实现时于 `common/` 新增功能包，不预建。不把具体业务或中间件放进 `common/`。
+  - `biz/`：全部业务模块的父包。每个限界上下文对应 `biz/<context>/`，其中 `<context>` 为该上下文的英文小写标识，
+    与目录名一致，不使用中文、下划线、连字符或资源复数形式。一个 `<context>` 只表达一个限界上下文。业务代码只放在
+    `biz/<context>/` 下，不放在根包、`common/`、`infra/` 或 `demo/`。本上下文的 Entity、Mapper 与业务异常类型留在该模块；
+    不把它们放到 `common/` 或 `infra/`。`biz/` 下不再套一层无业务含义的父包。尚未出现真实业务模块时不创建 `biz/`。
+  - `infra/`：全部中间件与外部系统适配的父包，含数据库、缓存、消息、对象存储等接入后的客户端与装配。每种已接入的能力对应
+    `infra/<capability>/`，其中 `<capability>` 为该能力的英文小写标识，与目录名一致，不使用中文、下划线或连字符。
+    `infra/<capability>/` 内类型平铺，不按分层再拆。不把中间件放进 `common/` 或 `biz/`，不把业务代码放进 `infra/`。尚未
+    接入任何中间件时不创建 `infra/`。
+  - `demo/`：仅用于骨架示例，只保留固定结果的示例端点，不在其中实现真实业务。尚无真实业务时保留；第一个真实业务模块进入
+    `biz/` 后删除 `demo/`；示例移除且该目录为空时同步删除目录。
+- **模块内部**：`biz/<context>/` 与仍存在的 `demo/` 按需包含 `controller/`、`service/`、`mapper/`、`entity/`、`dto/`、
+  `vo/`、`query/`、`contract/` 以及模块内的 `constant/`、`enums/`、`exception/`、`job/`、`config/`。单实现的 Service
+  直接使用实现类，不为形式上的接口拆分。
+- **避免过度分层**：当前不预设 `manager/`、`application/`、`domain/`、`util/`、`utils/` 或无业务含义的通用基类、通用
+  Service、通用 Controller。确有复杂度证据时，先记录新的架构决策再引入。
+- **边界职责**：业务 Controller 只负责协议转换、边界校验和调用用例；业务编排放在模块 Service，业务约束放在模块内业务
+  代码。示例、探针等没有业务编排的端点可以直接返回固定结果。业务 Controller 不直接承载业务规则，也不绕过 Service 操作
+  Mapper 或 Entity。Service 不依赖 Spring Web 类型，也不组装 `Result`。业务异常类型留在所属 `biz/<context>/`；将其映射为
+  HTTP 状态与 `Result` 的能力属于 `common` 功能包，在实现时创建，不预建。
+- **依赖方向**：`common` 不依赖 `biz` 或 `infra`；`infra` 可依赖 `common`，不依赖 `biz`；`infra/<capability>/` 之间禁止循环
+  依赖，不直访另一能力包的内部类型；`biz/<context>/` 可依赖 `common` 与 `infra` 的公开定义，彼此之间不依赖对方的
+  `entity/`、`mapper/` 等内部包；`demo` 只依赖 `common` 的公开定义。禁止循环依赖。
 - **跨模块协作**：默认通过提供方的公开 Service 或明确的 `contract` 协作类型完成；调用方负责编排，不构造其他模块的
   Entity，也不依赖被调用方的持久化实现。
-- **建包时机**：源码目录只在有源码文件时创建；删除或移动最后一个源码文件时同步删除空目录，不使用 `.gitkeep` 保留
-  空包。`target/`、`.git/` 以及 IDE/AI 工具目录不属于源码包。当前尚无真实业务模块，API 版本示例控制器放在根包
-  `controller/`；示例移除且该目录为空时同步删除目录。
+- **建包时机**：源码目录只在有源码文件时创建；不预创建尚无源码的分层子包；删除或移动最后一个源码文件时同步删除空目录，
+  不使用 `.gitkeep` 保留空包。根包、`common/` 及其功能包、`biz/`、`biz/<context>/`、`infra/`、`infra/<capability>/` 以及
+  仍存在的 `demo/` 在创建时同步添加 `package-info.java` 说明该包职责；分层子包不添加。`package-info.java` 的写法见
+  `docs/STYLE.md`。`target/`、`.git/` 以及 IDE/AI 工具目录不属于源码包。
 
 ## 接口与持久化模型的载体形式
 
@@ -53,9 +80,9 @@
   `GET /v2/test`，`GET /hello` 明确为未版本化接口。网关统一前缀属于部署层选择，未引入网关前不写入后端公共契约。
 - 使用 Spring MVC 官方 API Versioning：通过 `WebMvcConfigurer#configureApiVersioning` 配置路径段版本解析，通过映射注解的
   `version` 属性声明版本；不创建自定义版本注解或解析器。
-- 项目同时允许版本化与未版本化接口。`spring.mvc.apiversion.required=false` 放在 YAML；版本段格式与版本化路径判定
-  集中在 `common/api` 的 `ApiVersions`，配置类把它作为 `usePathSegment` 的路径 Predicate 传入，
-  仅将 `/vN` 路径交给版本解析，使 `/hello` 等普通路径保持未版本化。
+- 项目同时允许版本化与未版本化接口。`spring.mvc.apiversion.required=false` 放在 YAML；版本段格式、版本化路径判定与
+  MVC 配置集中在 `common/apiversion`。`ApiVersions` 提供路径模板与判定，同包的配置类把它作为 `usePathSegment` 的路径
+  Predicate 传入，仅将 `/vN` 路径交给版本解析，使 `/hello` 等普通路径保持未版本化。
 - 路径是唯一版本来源，不同时启用请求头、查询参数或媒体类型版本。支持的版本由 Controller 映射声明并由 Spring MVC 自动探测，
   不在 YAML 维护重复清单。
 - 只有不兼容的公共契约变更才新增版本；兼容性修复继续维护原版本。
@@ -70,8 +97,9 @@
 - 业务接口路径为「资源/动作」形式，路径中携带资源标识时置于末段；资源使用复数名词，动作使用统一动词，
   不混用 add、save、remove、get、find 等同义词。路径段使用小驼峰，不使用连字符和下划线。
 - 增删改查接口统一使用以下模板：`<Resource>` 与资源的 Entity 类名一致，`<resources>` 为其小驼峰复数形式，
-  `{resourceId}` 为资源标识路径参数；如 Entity `Article` 对应 `articles` 与 `articleId`。DTO、Query、VO 均以
-  `<Resource>` 为前缀命名，即 `<Resource>DTO`、`<Resource>Query`、`<Resource>VO`。
+  `{resourceId}` 为资源标识路径参数。DTO、Query、VO 均以 `<Resource>` 为前缀命名，即 `<Resource>DTO`、
+  `<Resource>Query`、`<Resource>VO`。下文用 `Article` / `articles` / `articleId` 只说明这套命名怎么展开，不表示仓库中
+  存在该业务模块。
 
 | 操作 | 接口模板 | 参数载体 |
 | --- | --- | --- |

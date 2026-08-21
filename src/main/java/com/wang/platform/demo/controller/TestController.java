@@ -1,6 +1,6 @@
-package com.wang.platform.controller;
+package com.wang.platform.demo.controller;
 
-import com.wang.platform.common.api.ApiVersions;
+import com.wang.platform.common.apiversion.ApiVersions;
 import com.wang.platform.common.response.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

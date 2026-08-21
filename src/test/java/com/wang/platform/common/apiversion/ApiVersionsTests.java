@@ -1,4 +1,4 @@
-package com.wang.platform.common.api;
+package com.wang.platform.common.apiversion;
 
 import org.junit.jupiter.api.Test;
 

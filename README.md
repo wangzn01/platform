@@ -22,34 +22,37 @@ platform/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/wang/platform/
-│   │   │   ├── common/
-│   │   │   │   ├── api/
-│   │   │   │   │   └── ApiVersions.java       # 公共 API 版本定义
-│   │   │   │   └── response/
-│   │   │   │       ├── Result.java            # 公共 API 统一结构化响应
-│   │   │   │       └── ResultEnum.java        # 公共 API 通用应用码
-│   │   │   ├── controller/
-│   │   │   │   ├── HelloController.java       # 未版本化示例接口
-│   │   │   │   └── TestController.java        # API 版本示例接口
-│   │   │   ├── infra/
-│   │   │   │   └── config/
-│   │   │   │       └── ApiVersionConfiguration.java # API 路径版本配置
-│   │   │   └── PlatformApplication.java       # 启动类
+│   │   │   ├── common/                        # 各业务共用的平台公共服务
+│   │   │   │   ├── apiversion/                # 公共 API 版本定义与路径版本配置
+│   │   │   │   │   ├── ApiVersionConfiguration.java # 公共 API 路径版本配置
+│   │   │   │   │   ├── ApiVersions.java       # 公共 API 版本定义
+│   │   │   │   │   └── package-info.java      # 公共 API 版本定义与路径版本配置
+│   │   │   │   ├── package-info.java          # 各业务共用的平台公共服务
+│   │   │   │   └── response/                  # 公共 API 统一结构化响应及通用应用码
+│   │   │   │       ├── package-info.java      # 公共 API 统一结构化响应及通用应用码
+│   │   │   │       ├── Result.java            # 公共 API 的统一结构化响应体
+│   │   │   │       └── ResultEnum.java        # 统一结构化响应使用的通用应用码
+│   │   │   ├── demo/                          # 骨架示例
+│   │   │   │   ├── controller/                # 骨架示例接口
+│   │   │   │   │   ├── HelloController.java   # 未版本化的示例接口
+│   │   │   │   │   └── TestController.java    # API 版本示例接口
+│   │   │   │   └── package-info.java          # 骨架示例
+│   │   │   ├── package-info.java              # Platform 应用根包
+│   │   │   └── PlatformApplication.java       # Platform 应用入口
 │   │   └── resources/
 │   │       └── application.yml                # 应用配置
 │   └── test/java/com/wang/platform/
 │       ├── common/
-│       │   ├── api/
+│       │   ├── apiversion/
+│       │   │   ├── ApiVersionConfigurationTests.java # 公共 API 路径版本配置测试
 │       │   │   └── ApiVersionsTests.java      # 公共 API 版本定义测试
 │       │   └── response/
 │       │       └── ResultTests.java           # 统一结构化响应测试
-│       ├── controller/
-│       │   ├── HelloControllerTests.java      # 未版本化示例接口测试
-│       │   └── TestControllerTests.java       # API 版本示例接口测试
-│       ├── infra/
-│       │   └── config/
-│       │       └── ApiVersionConfigurationTests.java # API 路径版本配置测试
-│       └── PlatformApplicationTests.java      # 启动测试
+│       ├── demo/
+│       │   └── controller/
+│       │       ├── HelloControllerTests.java  # 未版本化示例接口测试
+│       │       └── TestControllerTests.java   # API 版本示例接口测试
+│       └── PlatformApplicationTests.java      # 应用启动测试
 ├── docs/
 │   ├── ARCHITECTURE.md                        # 架构与公共契约
 │   ├── CHANGELOG.md                           # 版本更新记录
@@ -62,6 +65,8 @@ platform/
 ├── pom.xml                                    # Maven 项目配置
 └── README.md                                  # 项目说明
 ```
+
+当前尚无业务模块，也尚未接入中间件。包的落点与命名规则见 `docs/ARCHITECTURE.md`「模块化单体架构」。
 
 ## 环境要求
 

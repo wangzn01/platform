@@ -1,6 +1,6 @@
-package com.wang.platform.infra.config;
+package com.wang.platform.common.apiversion;
 
-import com.wang.platform.controller.HelloController;
+import com.wang.platform.demo.controller.HelloController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

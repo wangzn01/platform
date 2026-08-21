@@ -8,8 +8,8 @@
 
 - 编码使用 UTF-8；除 Markdown 外去除行尾空格。
 - Java、XML、YAML、Markdown、properties、sh 使用 LF；bat、cmd 使用 CRLF。
-- Java 文件最后一个非空字符应为最外层类型的 `}`，不保留终止 LF，也不保留末尾空白行；其他文本文件遵循
-  `.editorconfig` 的终止换行配置。
+- Java 类型源文件最后一个非空字符应为最外层类型的 `}`，不保留终止 LF，也不保留末尾空白行。`package-info.java` 以
+  `package` 声明结束，不要求以 `}` 结尾。其他文本文件遵循 `.editorconfig` 的终止换行配置。
 - 缩进只使用空格，不使用 Tab：Java、XML 为 4 个空格，YAML、JSON、Markdown 为 2 个空格。
 - 行宽上限为 120 列；超出时按语义换行，不为凑行宽拆散完整表达式。
 - 不产生与任务无关的格式与换行变化。
@@ -102,8 +102,11 @@ public class Example {
 
 ## Javadoc 与注释
 
-- 源码中声明的类、接口、枚举、注解类型（`@interface`）、枚举常量、字段、构造器和方法都写 Javadoc，
-  不因可见性低、逻辑简单或位于测试代码而省略。
+- 源码中声明的类、接口、枚举、注解类型（`@interface`）、枚举常量、字段、构造器、方法，以及需要包级说明的源码包都写
+  Javadoc，不因可见性低、逻辑简单或位于测试代码而省略。
+- 需要包级说明的源码包在 `src/main/java` 提供 `package-info.java`，用包级 Javadoc 说明该包职责，不罗列类名，不记录作者、
+  创建时间和修改历史。范围见 `docs/ARCHITECTURE.md`「建包时机」。测试与生产代码同包时，不在 `src/test/java` 重复放置
+  `package-info.java`。分层子包不写 `package-info.java`，包名即职责。
 - 测试方法的 Javadoc 写明用例目的、主要前提和断言重点；测试夹具字段与测试构造器同样写明用途。
 - 内容说明职责、业务约束、输入输出或设计原因，不逐字翻译代码，不记录作者、创建时间和修改历史。
 - Javadoc 与 `//` 注释的末尾不加句号；一段注释包含多句时，句与句之间仍用句号分隔，仅省略最后一句的句号。
@@ -128,7 +131,7 @@ public class Example {
 - Jakarta EE API 使用 `jakarta.*`，不使用旧的 `javax.*` 包名。
 - Spring 组件使用构造器注入，不使用字段注入，也不通过静态变量获取 Spring 容器。
 - 成组配置使用类型安全的 `@ConfigurationProperties`；密钥通过环境变量或密钥服务注入，不写入仓库。
-- 在系统边界校验输入，在领域内部保证业务不变量；Controller 和外部适配器的职责边界遵守 `docs/ARCHITECTURE.md`。
+- 在系统边界校验输入，在业务模块内部保证业务不变量；Controller 的职责边界遵守 `docs/ARCHITECTURE.md`。
 - 版本化 Controller 用 `ApiVersions.VERSION_PATH_TEMPLATE` 声明路径时，类上添加
   `@SuppressWarnings("MVCPathVariableInspection")`，并在类 Javadoc 说明路径变量仅承担版本段路由约束、
   版本值由 API Versioning 解析；未版本化 Controller 不涉及该模板，不添加此抑制。
@@ -141,7 +144,8 @@ public class Example {
 - 永远有值的字段使用基本类型（`int`、`long`、`boolean` 等），避免 null 语义歧义；仅在需要表达「未设置 / 已设置」
   二态时使用包装类型，并显式处理 null。
 - 字段由基本类型改为包装类型会改变公共 API 行为，按 `AGENTS.md`「必须先确认的变更」处理。
-- `common/` 下的载体字段全部使用 `final`，通过私有构造器与静态工厂方法创建。
+- `common/` 下的数据契约（如 `Result`）字段全部使用 `final`，通过私有构造器与静态工厂方法创建。`@Configuration` 等装配
+  类型不受此约束。
 - 金额使用 `BigDecimal` 并明确币种与舍入规则；时间使用 `java.time` 并明确时区语义。
 
 ## 编码习惯
